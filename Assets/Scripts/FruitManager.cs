@@ -17,14 +17,22 @@ public class FruitManager : MonoBehaviour
     [SerializeField] LineRenderer fruitSpawnLine;
 
     Fruit currentFruit;
+
+    bool canControl;
+    bool isControlling;
+
     void Start()
     {
+        canControl = true;
         HideLine();
     }
 
     void Update()
     {
-        ManagePlayerInput();
+        if (canControl)
+        {
+            ManagePlayerInput();
+        }
     }
 
     void ManagePlayerInput()
@@ -33,11 +41,11 @@ public class FruitManager : MonoBehaviour
         {
             MouseDownCb();
         }
-        else if (Input.GetMouseButtonUp(0))
+        else if (Input.GetMouseButtonUp(0) && isControlling)
         {
             MouseUpCb();
         }
-        else if (Input.GetMouseButton(0))
+        else if (Input.GetMouseButton(0) && isControlling)
         {
             MouseDragCb();
         }
@@ -60,6 +68,7 @@ public class FruitManager : MonoBehaviour
         fruitSpawnLine.SetPosition(1, GetSpawnPosition() + Vector2.down * 15);
 
         SpawnFruit();
+        isControlling = true;
     }
 
     void MouseUpCb()
@@ -68,6 +77,10 @@ public class FruitManager : MonoBehaviour
 
         // chuyển fruit bodyType => dynamic
         currentFruit.EnablePhysics();
+
+        canControl = false;
+        isControlling = false;
+        StartControlTimer();
     }
 
     void MouseDragCb()
@@ -105,6 +118,17 @@ public class FruitManager : MonoBehaviour
         fruitSpawnLine.SetPosition(0, GetSpawnPosition());
         fruitSpawnLine.SetPosition(1, GetSpawnPosition() + Vector2.down * 15);
     }
+
+    void StartControlTimer()
+    {
+        Invoke("StopControlTimer", .5f);
+    }
+
+    void StopControlTimer()
+    {
+        canControl = true;
+    }
+
 
 #if UNITY_EDITOR
     void OnDrawGizmos()
