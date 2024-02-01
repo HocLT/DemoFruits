@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -17,6 +18,12 @@ public class FruitManager : MonoBehaviour
 
     [SerializeField] LineRenderer fruitSpawnLine;
 
+    [Header("  Next Fruit Settings  ")]
+    [SerializeField] int nextFruitIndex;
+
+    [Header("  Actions  ")]
+    public static Action OnNextFruitIndexSet;
+
     Fruit currentFruit;
 
     bool canControl;
@@ -31,6 +38,8 @@ public class FruitManager : MonoBehaviour
 
     void Start()
     {
+        SetNextFruitIndex();
+
         canControl = true;
         HideLine();
     }
@@ -91,7 +100,10 @@ public class FruitManager : MonoBehaviour
         HideLine();
 
         // chuyển fruit bodyType => dynamic
-        currentFruit.EnablePhysics();
+        if (currentFruit != null)
+        {
+            currentFruit.EnablePhysics();
+        }
 
         canControl = false;
         isControlling = false;
@@ -126,11 +138,14 @@ public class FruitManager : MonoBehaviour
     {
         Vector2 spawnPos = GetSpawnPosition();
 
-        Fruit fruitToInstance = spawnableFruits[Random.Range(0, spawnableFruits.Length)];
+        //Fruit fruitToInstance = spawnableFruits[Random.Range(0, spawnableFruits.Length)];
+        Fruit fruitToInstance = spawnableFruits[nextFruitIndex];
         currentFruit = Instantiate(fruitToInstance,
             spawnPos,
             Quaternion.identity,
             fruitsParent);
+
+        SetNextFruitIndex();
     }
 
     void PlaceLineAtClickedPosition()
@@ -169,6 +184,24 @@ public class FruitManager : MonoBehaviour
             Quaternion.identity,
             fruitsParent);
         fruitInstance.EnablePhysics();
+    }
+
+    void SetNextFruitIndex()
+    {
+        nextFruitIndex = UnityEngine.Random.Range(0, spawnableFruits.Length);
+
+        OnNextFruitIndexSet?.Invoke();
+    }
+
+    public string GetNextFruitName()
+    {
+        return spawnableFruits[nextFruitIndex].name;
+    }
+
+    public Sprite GetNextFruitSprite()
+    {
+        //return spawnableFruits[nextFruitIndex].transform.GetChild(0).GetComponent<SpriteRenderer>().sprite;
+        return spawnableFruits[nextFruitIndex].GetSprite();
     }
 
 #if UNITY_EDITOR
